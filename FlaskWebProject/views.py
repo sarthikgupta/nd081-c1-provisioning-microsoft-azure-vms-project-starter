@@ -5,6 +5,7 @@ Routes and views for the flask application.
 from datetime import datetime
 from flask import render_template, flash, redirect, request, session, url_for
 from werkzeug.urls import url_parse
+from logging.config import dictConfig
 from config import Config
 from FlaskWebProject import app, db
 from FlaskWebProject.forms import LoginForm, PostForm
@@ -69,10 +70,12 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
+            app.logger.warn('Unsucessful Login attempt!!!')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
+            app.logger.info('Sucessful Login attempt!!!')
             next_page = url_for('home')
         return redirect(next_page)
     session["state"] = str(uuid.uuid4())
